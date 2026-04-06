@@ -35,5 +35,12 @@ next-env.d.ts
 # Misc
 aa
 
-# Dev tooling (personal Claude Code settings)
+# Dev tooling (AI editor configs — not for repo)
 .claude/
+CLAUDE.md
+GEMINI.md
+AGENTS.md
+.mcp.json
+.opencode.json
+.cursorrules
+.windsurfrules
