@@ -19,9 +19,15 @@ export function setTokenGetter(fn: () => Promise<string | null>) {
 apiClient.interceptors.request.use(async (config) => {
   try {
     const token = await _getToken?.();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    console.log('[interceptor] token:', token ? 'present' : 'NULL');
+    if (!token) {
+      // Abort the request rather than sending without auth — an unauthenticated
+      // request guarantees a 401 and would get stuck in React Query's error cache.
+      const controller = new AbortController();
+      controller.abort();
+      return { ...config, signal: controller.signal };
     }
+    config.headers.Authorization = `Bearer ${token}`;
   } catch {
     // no active session
   }

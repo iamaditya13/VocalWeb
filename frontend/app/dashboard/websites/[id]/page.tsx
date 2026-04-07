@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence as ModalAnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
   Download,
@@ -14,13 +14,17 @@ import {
   Smartphone,
   Monitor,
   Loader2,
+  Github,
+  Rocket,
 } from "lucide-react";
 import { useState } from "react";
 import { apiClient } from "@/lib/api";
 import { formatDistanceToNow } from "date-fns";
 import toast from "react-hot-toast";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "boneyard-js/react";
 import Link from "next/link";
+import { GitHubPushModal } from "@/components/GitHubPushModal";
+import { VercelDeployModal } from "@/components/VercelDeployModal";
 
 export default function WebsiteDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -28,12 +32,14 @@ export default function WebsiteDetailPage() {
   const queryClient = useQueryClient();
   const [viewport, setViewport] = useState<"desktop" | "mobile">("desktop");
   const [copied, setCopied] = useState(false);
+  const [showGitHubModal, setShowGitHubModal] = useState(false);
+  const [showVercelModal, setShowVercelModal] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["website", id],
     queryFn: () => apiClient.get(`/websites/${id}`).then((r) => r.data),
     refetchInterval: (query) =>
-      query.state.data?.status === "generating" ? 2000 : false,
+      query.state.status === "success" && query.state.data?.status === "generating" ? 2000 : false,
   });
 
   const website = data?.data;
@@ -78,10 +84,10 @@ export default function WebsiteDetailPage() {
     toast.success("Link copied!");
   };
 
-  if (isLoading) return <WebsiteDetailSkeleton />;
-  if (error || !website) return <div className="text-zinc-500 p-8">Website not found.</div>;
+  if (error && !isLoading) return <div className="text-zinc-500 p-8">Website not found.</div>;
 
   return (
+    <Skeleton name="website-detail" loading={isLoading} className="min-h-[600px]">
     <div className="max-w-6xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
@@ -143,6 +149,24 @@ export default function WebsiteDetailPage() {
           >
             <Download size={12} />
             Download HTML
+          </button>
+
+          <button
+            onClick={() => setShowGitHubModal(true)}
+            disabled={website.status !== "ready"}
+            className="flex items-center gap-2 border border-zinc-200 text-zinc-700 text-[12px] font-medium px-4 py-2 rounded-xl hover:bg-zinc-50 transition-all disabled:opacity-50"
+          >
+            <Github size={12} />
+            Push to GitHub
+          </button>
+
+          <button
+            onClick={() => setShowVercelModal(true)}
+            disabled={website.status !== "ready"}
+            className="flex items-center gap-2 border border-zinc-200 text-zinc-700 text-[12px] font-medium px-4 py-2 rounded-xl hover:bg-zinc-50 transition-all disabled:opacity-50"
+          >
+            <Rocket size={12} />
+            Deploy to Vercel
           </button>
 
           <button
@@ -296,7 +320,30 @@ export default function WebsiteDetailPage() {
           )}
         </div>
       </div>
+
+      {/* GitHub Push Modal */}
+      <ModalAnimatePresence>
+        {showGitHubModal && (
+          <GitHubPushModal
+            htmlContent={website.htmlContent ?? ""}
+            websiteTitle={website.businessName ?? "my-website"}
+            onClose={() => setShowGitHubModal(false)}
+          />
+        )}
+      </ModalAnimatePresence>
+
+      {/* Vercel Deploy Modal */}
+      <ModalAnimatePresence>
+        {showVercelModal && (
+          <VercelDeployModal
+            htmlContent={website.htmlContent ?? ""}
+            websiteTitle={website.businessName ?? "my-website"}
+            onClose={() => setShowVercelModal(false)}
+          />
+        )}
+      </ModalAnimatePresence>
     </div>
+    </Skeleton>
   );
 }
 
@@ -323,25 +370,3 @@ function DetailRow({ label, children }: { label: string; children: React.ReactNo
   );
 }
 
-function WebsiteDetailSkeleton() {
-  return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      <div className="flex items-center gap-4">
-        <Skeleton className="w-8 h-8 rounded-lg" />
-        <div className="space-y-2">
-          <Skeleton className="h-5 w-48" />
-          <Skeleton className="h-3 w-32" />
-        </div>
-      </div>
-      <div className="grid grid-cols-3 gap-6">
-        <div className="col-span-2">
-          <Skeleton className="h-[580px] rounded-2xl" />
-        </div>
-        <div className="space-y-4">
-          <Skeleton className="h-52 rounded-2xl" />
-          <Skeleton className="h-32 rounded-2xl" />
-        </div>
-      </div>
-    </div>
-  );
-}

@@ -4,6 +4,7 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Providers } from "@/components/providers";
 import { Toaster } from "react-hot-toast";
+import { BonesRegistry } from "@/components/BonesRegistry";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -51,6 +52,7 @@ export default function RootLayout({
       <html lang="en" className={inter.variable} suppressHydrationWarning>
         <body className="min-h-screen bg-white font-sans text-zinc-900 antialiased">
           <Providers>
+            <BonesRegistry />
             {children}
             <Toaster
               position="bottom-right"

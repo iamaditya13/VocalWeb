@@ -4,21 +4,27 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { Plus, Globe, Zap, TrendingUp, Clock } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@clerk/nextjs";
 import { apiClient } from "@/lib/api";
 import { WebsiteCard } from "@/components/dashboard/WebsiteCard";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { EmptyState } from "@/components/dashboard/EmptyState";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "boneyard-js/react";
 
 export default function DashboardPage() {
+  const { isLoaded, isSignedIn } = useAuth();
+  const authReady = isLoaded && !!isSignedIn;
+
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ["dashboard-stats"],
     queryFn: () => apiClient.get("/dashboard/stats").then((r) => r.data),
+    enabled: authReady,
   });
 
   const { data: websites, isLoading: websitesLoading } = useQuery({
     queryKey: ["websites-recent"],
     queryFn: () => apiClient.get("/websites?limit=6").then((r) => r.data),
+    enabled: authReady,
   });
 
   const statItems = [
@@ -60,11 +66,9 @@ export default function DashboardPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.06, duration: 0.4 }}
             >
-              {statsLoading ? (
-                <Skeleton className="h-28 rounded-2xl" />
-              ) : (
+              <Skeleton name="dashboard-stats-card" loading={statsLoading}>
                 <StatsCard {...stat} />
-              )}
+              </Skeleton>
             </motion.div>
           ))}
         </div>
@@ -89,52 +93,48 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {websitesLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[...Array(3)].map((_, i) => (
-              <Skeleton key={i} className="h-52 rounded-2xl" />
-            ))}
-          </div>
-        ) : websites?.data?.length === 0 ? (
-          <EmptyState
-            title="No websites yet"
-            description="Create your first website using your voice. It takes under 60 seconds."
-            cta="Create your first website"
-            ctaHref="/dashboard/create"
-          />
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {websites?.data?.map((website: Record<string, unknown>, i: number) => (
+        <Skeleton name="dashboard-recent-websites" loading={websitesLoading} className="min-h-[220px]">
+          {websites?.data?.length === 0 ? (
+            <EmptyState
+              title="No websites yet"
+              description="Create your first website using your voice. It takes under 60 seconds."
+              cta="Create your first website"
+              ctaHref="/dashboard/create"
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {websites?.data?.map((website: Record<string, unknown>, i: number) => (
+                <motion.div
+                  key={website.id as string}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 + i * 0.06, duration: 0.4 }}
+                >
+                  <WebsiteCard website={website} />
+                </motion.div>
+              ))}
+
+              {/* New website card */}
               <motion.div
-                key={website.id as string}
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + i * 0.06, duration: 0.4 }}
+                transition={{ delay: 0.3 + (websites?.data?.length || 0) * 0.06, duration: 0.4 }}
               >
-                <WebsiteCard website={website} />
+                <Link
+                  href="/dashboard/create"
+                  className="flex flex-col items-center justify-center h-52 rounded-2xl border-2 border-dashed border-zinc-200 hover:border-zinc-400 hover:bg-zinc-50 transition-all group"
+                >
+                  <div className="w-10 h-10 bg-zinc-100 rounded-xl flex items-center justify-center group-hover:bg-zinc-200 transition-colors mb-3">
+                    <Plus size={18} className="text-zinc-500" />
+                  </div>
+                  <span className="text-[13px] font-medium text-zinc-500 group-hover:text-zinc-700">
+                    Create new website
+                  </span>
+                </Link>
               </motion.div>
-            ))}
-
-            {/* New website card */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 + (websites?.data?.length || 0) * 0.06, duration: 0.4 }}
-            >
-              <Link
-                href="/dashboard/create"
-                className="flex flex-col items-center justify-center h-52 rounded-2xl border-2 border-dashed border-zinc-200 hover:border-zinc-400 hover:bg-zinc-50 transition-all group"
-              >
-                <div className="w-10 h-10 bg-zinc-100 rounded-xl flex items-center justify-center group-hover:bg-zinc-200 transition-colors mb-3">
-                  <Plus size={18} className="text-zinc-500" />
-                </div>
-                <span className="text-[13px] font-medium text-zinc-500 group-hover:text-zinc-700">
-                  Create new website
-                </span>
-              </Link>
-            </motion.div>
-          </div>
-        )}
+            </div>
+          )}
+        </Skeleton>
       </motion.div>
 
       {/* Plan callout */}

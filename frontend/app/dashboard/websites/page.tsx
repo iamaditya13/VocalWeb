@@ -5,17 +5,20 @@ import { motion } from "framer-motion";
 import { Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useAuth } from "@clerk/nextjs";
 import { apiClient } from "@/lib/api";
 import { WebsiteCard } from "@/components/dashboard/WebsiteCard";
 import { EmptyState } from "@/components/dashboard/EmptyState";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "boneyard-js/react";
 
 export default function WebsitesPage() {
   const [search, setSearch] = useState("");
+  const { isLoaded, isSignedIn } = useAuth();
 
   const { data, isLoading } = useQuery({
     queryKey: ["websites"],
     queryFn: () => apiClient.get("/websites").then((r) => r.data),
+    enabled: isLoaded && !!isSignedIn,
   });
 
   const websites = data?.data || [];
@@ -57,54 +60,50 @@ export default function WebsitesPage() {
       )}
 
       {/* Grid */}
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[...Array(6)].map((_, i) => (
-            <Skeleton key={i} className="h-52 rounded-2xl" />
-          ))}
-        </div>
-      ) : filtered.length === 0 ? (
-        <EmptyState
-          title={search ? "No results" : "No websites yet"}
-          description={
-            search
-              ? `No websites match "${search}"`
-              : "Create your first website using your voice. It takes under 60 seconds."
-          }
-          cta={!search ? "Create your first website" : undefined}
-          ctaHref="/dashboard/create"
-        />
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((website: Record<string, unknown>, i: number) => (
+      <Skeleton name="websites-grid" loading={isLoading} className="min-h-[300px]">
+        {filtered.length === 0 ? (
+          <EmptyState
+            title={search ? "No results" : "No websites yet"}
+            description={
+              search
+                ? `No websites match "${search}"`
+                : "Create your first website using your voice. It takes under 60 seconds."
+            }
+            cta={!search ? "Create your first website" : undefined}
+            ctaHref="/dashboard/create"
+          />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filtered.map((website: Record<string, unknown>, i: number) => (
+              <motion.div
+                key={website.id as string}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05, duration: 0.4 }}
+              >
+                <WebsiteCard website={website} />
+              </motion.div>
+            ))}
             <motion.div
-              key={website.id as string}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05, duration: 0.4 }}
+              transition={{ delay: filtered.length * 0.05, duration: 0.4 }}
             >
-              <WebsiteCard website={website} />
+              <Link
+                href="/dashboard/create"
+                className="flex flex-col items-center justify-center h-52 rounded-2xl border-2 border-dashed border-zinc-200 hover:border-zinc-400 hover:bg-zinc-50 transition-all group"
+              >
+                <div className="w-10 h-10 bg-zinc-100 rounded-xl flex items-center justify-center group-hover:bg-zinc-200 transition-colors mb-3">
+                  <Plus size={18} className="text-zinc-500" />
+                </div>
+                <span className="text-[13px] font-medium text-zinc-500 group-hover:text-zinc-700">
+                  Create new website
+                </span>
+              </Link>
             </motion.div>
-          ))}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: filtered.length * 0.05, duration: 0.4 }}
-          >
-            <Link
-              href="/dashboard/create"
-              className="flex flex-col items-center justify-center h-52 rounded-2xl border-2 border-dashed border-zinc-200 hover:border-zinc-400 hover:bg-zinc-50 transition-all group"
-            >
-              <div className="w-10 h-10 bg-zinc-100 rounded-xl flex items-center justify-center group-hover:bg-zinc-200 transition-colors mb-3">
-                <Plus size={18} className="text-zinc-500" />
-              </div>
-              <span className="text-[13px] font-medium text-zinc-500 group-hover:text-zinc-700">
-                Create new website
-              </span>
-            </Link>
-          </motion.div>
-        </div>
-      )}
+          </div>
+        )}
+      </Skeleton>
     </div>
   );
 }

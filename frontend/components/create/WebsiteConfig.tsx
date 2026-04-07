@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 
 const SECTIONS = [
   { id: "hero", label: "Hero / Banner" },
@@ -140,8 +140,11 @@ export function WebsiteConfig({
                     : "bg-white text-zinc-500 border-zinc-200 hover:border-zinc-400"
                 } ${isRequired ? "opacity-60 cursor-default" : "cursor-pointer"}`}
               >
-                {section.label}
-                {isRequired && " *"}
+                <span className="flex items-center gap-1.5">
+                  {isSelected && <Check size={11} strokeWidth={2.5} />}
+                  {section.label}
+                  {isRequired && " *"}
+                </span>
               </button>
             );
           })}

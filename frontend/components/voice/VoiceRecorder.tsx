@@ -19,15 +19,16 @@ export function VoiceRecorder({ onTranscriptReady, onSkip }: VoiceRecorderProps)
   const [showTextFallback, setShowTextFallback] = useState(false);
   const [supported, setSupported] = useState(true);
   const [audioLevels, setAudioLevels] = useState<number[]>(Array(20).fill(2));
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const animFrameRef = useRef<number | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
-    const SpeechRecognition =
-      (window as unknown as { SpeechRecognition?: typeof window.SpeechRecognition; webkitSpeechRecognition?: typeof window.SpeechRecognition }).SpeechRecognition ||
-      (window as unknown as { webkitSpeechRecognition?: typeof window.SpeechRecognition }).webkitSpeechRecognition;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const w = window as any;
+    const SpeechRecognition = w.SpeechRecognition || w.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       setSupported(false);
       setShowTextFallback(true);
@@ -78,9 +79,9 @@ export function VoiceRecorder({ onTranscriptReady, onSkip }: VoiceRecorderProps)
   }, []);
 
   const startRecording = useCallback(() => {
-    const SpeechRecognition =
-      (window as unknown as { SpeechRecognition?: typeof window.SpeechRecognition }).SpeechRecognition ||
-      (window as unknown as { webkitSpeechRecognition?: typeof window.SpeechRecognition }).webkitSpeechRecognition;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const w2 = window as any;
+    const SpeechRecognition = w2.SpeechRecognition || w2.webkitSpeechRecognition;
     if (!SpeechRecognition) return;
 
     const recognition = new SpeechRecognition();
@@ -88,7 +89,8 @@ export function VoiceRecorder({ onTranscriptReady, onSkip }: VoiceRecorderProps)
     recognition.interimResults = true;
     recognition.lang = "en-US";
 
-    recognition.onresult = (e: SpeechRecognitionEvent) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    recognition.onresult = (e: any) => {
       let final = "";
       let interim = "";
       for (let i = 0; i < e.results.length; i++) {
@@ -102,7 +104,8 @@ export function VoiceRecorder({ onTranscriptReady, onSkip }: VoiceRecorderProps)
       setInterimText(interim);
     };
 
-    recognition.onerror = (e: SpeechRecognitionErrorEvent) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    recognition.onerror = (e: any) => {
       if (e.error !== "aborted") {
         setState("done");
         stopVisualization();

@@ -35,6 +35,9 @@ next-env.d.ts
 # Misc
 aa
 
+# Boneyard — generated skeleton layout files (run `npm run bones` to regenerate)
+frontend/bones/
+
 # Dev tooling (AI editor configs — not for repo)
 .claude/
 CLAUDE.md

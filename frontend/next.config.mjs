@@ -1,5 +1,13 @@
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  turbopack: {
+    root: __dirname,
+  },
   experimental: {
     serverActions: {
       allowedOrigins: ["localhost:3000", "vocalweb.ai"],
@@ -25,15 +33,20 @@ const nextConfig = {
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
   },
 
-  // Aggressive caching for static assets + security headers
+  // Security headers + production-only static asset caching
   async headers() {
+    const isProd = process.env.NODE_ENV === "production";
     return [
-      {
-        source: "/_next/static/:path*",
-        headers: [
-          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
-        ],
-      },
+      ...(isProd
+        ? [
+            {
+              source: "/_next/static/:path*",
+              headers: [
+                { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+              ],
+            },
+          ]
+        : []),
       {
         source: "/:path*",
         headers: [

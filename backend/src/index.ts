@@ -34,19 +34,22 @@ app.use(
 );
 
 // Rate limiting
+const isDev = process.env.NODE_ENV !== "production";
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: isDev ? 0 : 100, // 0 = unlimited in dev
   standardHeaders: true,
   legacyHeaders: false,
+  skip: () => isDev,
 });
 app.use(limiter);
 
 // Generation-specific stricter limit
 const generateLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 20,
+  max: isDev ? 0 : 20,
   message: { error: "Too many generation requests. Please try again later." },
+  skip: () => isDev,
 });
 
 // Logging

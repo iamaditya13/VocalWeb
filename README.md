@@ -20,6 +20,7 @@ vocalweb/
 4. Groq (Llama 3.3 70B) acts as fallback if Gemini is unavailable
 5. Emergency static template ensures generation never fails
 6. Site is published instantly at `/sites/:slug`
+7. Website can be pushed to GitHub or deployed to Vercel directly from the dashboard
 
 ## Quick Start
 
@@ -61,9 +62,8 @@ npm run dev
 | Variable | Description |
 |---|---|
 | `NEXT_PUBLIC_API_URL` | Backend URL |
-| `NEXTAUTH_SECRET` | Random secret for NextAuth |
-| `GOOGLE_CLIENT_ID` | Google OAuth client ID |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk publishable key |
+| `CLERK_SECRET_KEY` | Clerk secret key |
 
 ### Backend (`backend/.env`)
 | Variable | Description |
@@ -87,6 +87,17 @@ The generation pipeline uses a dual-provider system with automatic fallback:
 | 3 | Static template | — | Emergency — never fails |
 
 Provider stats available at `GET /api/admin/provider-stats`.
+
+## Features
+
+- **Voice-to-website** — record 60 seconds of speech, get a full HTML+CSS site
+- **Live preview** — desktop and mobile viewport toggle
+- **Publish** — host on VocalWeb at `/sites/:slug`
+- **Download** — export as a single `.html` file
+- **Push to GitHub** — create a repo and push `index.html` directly from the dashboard
+- **Deploy to Vercel** — one-click Vercel deployment from the dashboard
+- **Regenerate** — re-run AI generation any time
+- **Skeleton UI** — Boneyard layout skeletons for all loading states
 
 ## Pricing Plans
 
@@ -117,11 +128,12 @@ vercel deploy
 | Layer | Tech |
 |---|---|
 | Frontend | Next.js 14, React 18, TypeScript, Tailwind CSS, Framer Motion |
-| Auth | NextAuth.js (credentials + Google OAuth) |
+| Auth | Clerk |
 | Backend | Express, TypeScript |
 | Database | PostgreSQL + Prisma ORM |
 | Queue | BullMQ + Redis |
 | AI (Primary) | Google Gemini Flash (`@google/generative-ai`) |
 | AI (Fallback) | Groq Llama 3.3 70B (`groq-sdk`) |
 | Payments | Razorpay |
+| Skeleton UI | Boneyard |
 | Hosting | Vercel (frontend) + Railway (backend) |

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { createClerkClient } from "@clerk/backend";
+import { createClerkClient, verifyToken } from "@clerk/backend";
 import { prisma } from "../lib/prisma";
 
 const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
@@ -25,16 +25,22 @@ export async function authenticate(
 
   const token = authHeader.split(" ")[1];
 
+  // Step 1: verify the token — only auth errors should produce 401
+  let clerkUserId: string;
   try {
-    // Verify the Clerk session token
-    const { sub: clerkUserId } = await clerk.verifyToken(token);
-
-    if (!clerkUserId) {
+    const payload = await verifyToken(token, { secretKey: process.env.CLERK_SECRET_KEY! });
+    if (!payload.sub) {
       res.status(401).json({ error: "Invalid token" });
       return;
     }
+    clerkUserId = payload.sub;
+  } catch {
+    res.status(401).json({ error: "Invalid or expired token" });
+    return;
+  }
 
-    // Find or provision our DB user from Clerk identity
+  // Step 2: resolve the DB user — errors here are 500, not 401
+  try {
     let user = await prisma.user.findUnique({ where: { clerkId: clerkUserId } });
 
     if (!user) {
@@ -66,8 +72,10 @@ export async function authenticate(
     req.userPlan = user.plan;
 
     next();
-  } catch {
-    res.status(401).json({ error: "Invalid or expired token" });
+  } catch (err) {
+    const { logger } = await import("../lib/logger");
+    logger.error("Auth middleware DB error:", err);
+    res.status(500).json({ error: "Internal server error. Please try again." });
   }
 }
 
