@@ -1,18 +1,19 @@
 import { fileURLToPath } from "url";
-import { dirname } from "path";
+import { dirname, resolve } from "path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   turbopack: {
-    root: __dirname,
+    // Point to monorepo root so Turbopack resolves lockfiles correctly
+    root: resolve(__dirname, ".."),
   },
   experimental: {
     serverActions: {
       allowedOrigins: ["localhost:3000", "vocalweb.ai"],
     },
-    // Tree-shake large packages — avoids shipping unused icons/components
+    // Tree-shake only large barrel-export packages — small packages like Radix don't need this
     optimizePackageImports: ["framer-motion", "lucide-react", "date-fns"],
   },
 
