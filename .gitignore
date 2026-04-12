@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Environment variables (secrets)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build output
+.next/
+dist/
+build/
+out/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime
+.DS_Store
+*.pem
+Thumbs.db
+
+# TypeScript build info
+*.tsbuildinfo
+next-env.d.ts
+
+# Misc
+aa
+
+# Boneyard — generated skeleton layout files (run `npm run bones` to regenerate)
+frontend/bones/
+
+# Dev tooling (AI editor configs — not for repo)
+.claude/
+CLAUDE.md
+GEMINI.md
+AGENTS.md
+.mcp.json
+.opencode.json
+.cursorrules
+.windsurfrules

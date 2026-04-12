@@ -1,0 +1,12 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "env": {
+    "NEXT_PUBLIC_API_URL": "@vocalweb_api_url",
+    "NEXTAUTH_SECRET": "@vocalweb_nextauth_secret",
+    "GOOGLE_CLIENT_ID": "@vocalweb_google_client_id",
+    "GOOGLE_CLIENT_SECRET": "@vocalweb_google_client_secret"
+  }
+}
