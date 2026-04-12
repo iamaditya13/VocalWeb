@@ -29,13 +29,19 @@ vocalweb/
 - PostgreSQL
 - Redis
 
+### Clone
+
+```bash
+git clone https://github.com/iamaditya13/VocalWeb.git
+cd VocalWeb
+```
+
 ### Frontend
 
 ```bash
 cd frontend
 npm install
-cp .env.local.example .env.local
-# Fill in your env vars
+# Create frontend/.env with the variables listed below
 npm run dev
 # Runs on http://localhost:3000
 ```
@@ -58,23 +64,32 @@ npm run dev
 
 ## Environment Variables
 
-### Frontend (`frontend/.env.local`)
+> `.env` files are gitignored. Use [backend/.env.example](backend/.env.example) as a template. Never commit real secrets.
+
+### Frontend (`frontend/.env`)
 | Variable | Description |
 |---|---|
-| `NEXT_PUBLIC_API_URL` | Backend URL |
+| `NEXT_PUBLIC_API_URL` | Backend URL (e.g. `http://localhost:4000`) |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk publishable key |
 | `CLERK_SECRET_KEY` | Clerk secret key |
 
 ### Backend (`backend/.env`)
 | Variable | Description |
 |---|---|
+| `PORT` | Server port (default `4000`) |
 | `DATABASE_URL` | PostgreSQL connection string |
 | `REDIS_URL` | Redis connection string |
-| `JWT_SECRET` | JWT signing secret |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk publishable key |
+| `CLERK_SECRET_KEY` | Clerk secret key (auth verification) |
 | `GEMINI_API_KEY` | Google Gemini API key (primary AI, free tier) |
 | `GROQ_API_KEY` | Groq API key (fallback AI, free tier) |
+| `FRONTEND_URL` | Frontend URL for CORS |
+| `PUBLISHED_BASE_URL` | Base URL for published sites |
 | `RAZORPAY_KEY_ID` | Razorpay public key |
 | `RAZORPAY_KEY_SECRET` | Razorpay secret key |
+| `RAZORPAY_WEBHOOK_SECRET` | Razorpay webhook secret |
+| `ADMIN_EMAILS` | Comma-separated admin emails |
+| `LOG_LEVEL` | Logger level (default `info`) |
 
 ## AI Provider Architecture
 
